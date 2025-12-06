@@ -1,5 +1,5 @@
 import express from "express"
-const app =express()
+const app = express()
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
@@ -18,6 +18,9 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
+//routes import
+import userRoutes from "./routes/user.routes.js"
+app.use("/api/v1/user", userRoutes)
 
 
 export default app

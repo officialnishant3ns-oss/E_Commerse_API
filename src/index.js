@@ -25,3 +25,4 @@ connectdb()
      app.get('/api/v1',(_,res)=>{
         res.send('Welcome to the E-commerce App')
     })
+    
