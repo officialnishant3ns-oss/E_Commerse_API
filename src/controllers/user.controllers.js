@@ -7,11 +7,11 @@ import User from "../models/user.models.js"
 const register = AsyncHandler(async (req, res) => {
     const { username, email, password } = req.body
     if (!username || !email || !password) {
-        throw new ApiError(400, "Please Enetr Required fiels")
+        throw new ApiError(400, "Please Enter Required fields")
     }
     const userExist = await User.findOne({ email })
     if (userExist) {
-        throw new ApiError(409, "User Already Exist Pls Go Login")
+        throw new ApiError(409, "User Already Exist Pls Go to Login")
     }
     const user = await User.create({
         email,
@@ -19,7 +19,7 @@ const register = AsyncHandler(async (req, res) => {
         username: username.toLowerCase()
     })
     const createduser = await User.findById(user._id).select(
-        "-password -refresstoken"
+        "-password -refreshtoken"
     )
     if (!createduser) {
         throw new ApiError(500, "Something went wrong while registering the user")
