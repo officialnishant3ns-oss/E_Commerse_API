@@ -3,7 +3,6 @@ import ApiResponse from "../utils/apiresponse.js"
 import AsyncHandler from "../utils/asynchandler.js"
 import User from "../models/user.models.js"
 import emailValidator from "email-validator"
-import asyncHandler from "../utils/asynchandler.js"
 
 const AccesstokenAndRefreshtokenGenerate = async (userId) => {
     try {
@@ -84,18 +83,18 @@ const login = AsyncHandler(async (req, res) => {
         )
 })
 const logout = AsyncHandler(async (req, res) => {
-
-    User.findByIdAndUpdate(req.user._id,
+  console.log("User logged out:", req.user)
+   await User.findByIdAndUpdate(req.user._id,
         {
             $set: {
                 refreshtoken: undefined
             }
         },
         {
-            new: true,
-            runValidators: true
+            new: true
         }
     )
+  
     const option = {
         httpOnly: true,
         secure: true
