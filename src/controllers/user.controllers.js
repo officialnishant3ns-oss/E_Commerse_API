@@ -4,6 +4,22 @@ import AsyncHandler from "../utils/asynchandler.js"
 import User from "../models/user.models.js"
 import emailValidator from "email-validator"
 
+const AccesstokenAndRefreshtokenGenerate = async (userId) => {
+    try {
+        const user = await User.findById(userId)
+        if (!user) {
+            throw new ApiError(404, "User not found while generating tokens")
+        }
+        const refreshtoken = await user.generateRefreshToken()
+        const accesstoken = await user.generateAccessToken()
+
+        user.refreshtoken = refreshtoken
+        await user.save({ validateBeforeSave: true })
+        return { accesstoken, refreshtoken }
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating user")
+    }
+}
 const register = AsyncHandler(async (req, res) => {
     const { username, email, password } = req.body
     if (!username || !email || !password) {
@@ -40,18 +56,31 @@ const login = AsyncHandler(async (req, res) => {
     if (!email || !password) {
         throw new ApiError(400, "Please enter required fields")
     }
-    const userExist = await User.findOne({ email })
-    if (!userExist) {
+    const user = await User.findOne({ email })
+    if (!user) {
         throw new ApiError(404, "User not found, please register")
     }
-    const isPasswordmatch = await userExist.isPassword(password)
+    const isPasswordmatch = await user.isPassword(password)
     if (!isPasswordmatch) {
         throw new ApiError(401, "Invalid credentials, please try again")
     }
 
-    return res.status(200).json(
-        new ApiResponse(200, userExist, "User logged in successfully")
+    const { accesstoken, refreshtoken } = await AccesstokenAndRefreshtokenGenerate(user._id)
+   
+    const loggegInUser = await User.findById(user._id).select(
+        "-password -refreshtoken"
     )
+    
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+    res.status(200)
+        .cookie("refreshtoken", refreshtoken, options)
+        .cookie("accesstoken", accesstoken, options)
+        .json(
+            new ApiResponse(200, loggegInUser, "User logged in successfully")
+        )
 })
 
 
