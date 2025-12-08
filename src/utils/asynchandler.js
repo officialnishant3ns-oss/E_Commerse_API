@@ -7,7 +7,7 @@ const asyncHandler = (func) => async (req, res, next) => {
             message: error.message,
             errors: error.errors || []
         })
-        console.log("Error in asyncHandler:", error)
+        // console.log("Error in asyncHandler:", error)
     }
 }
 export default asyncHandler
