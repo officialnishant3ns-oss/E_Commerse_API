@@ -4,7 +4,6 @@ const productSchema = new mongoose.Schema(
     {
         productname: {
             type: String,
-            required: true,
             trim: true,
         },
         description: {
@@ -13,9 +12,8 @@ const productSchema = new mongoose.Schema(
             trim: true,
         },
         productimage: {
-            type: String,
-            required: true,
-            trim: true,
+            type: Array,
+            required: true
         },
         price: {
             type: Number,
@@ -29,6 +27,13 @@ const productSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
             required: true,
+        },
+        subcategory: {
+            type: String,
+            trim: true
+        },
+        sizes:{
+            type: [String]
         },
         owner: {
             type: mongoose.Schema.Types.ObjectId,

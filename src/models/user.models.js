@@ -25,9 +25,13 @@ const userSchema = new mongoose.Schema(
 
         refreshtoken: {
             type: String
+        },
+        cartdata: {
+            type: Object,
+            default: {}
         }
-
     },
+    { minimize: false },
     { timestamps: true }
 )
 userSchema.pre("save", async function () {

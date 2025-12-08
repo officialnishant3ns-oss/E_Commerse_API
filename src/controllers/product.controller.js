@@ -4,27 +4,39 @@ import ApiError from "../utils/apierror.js"
 import ApiResponse from "../utils/apiresponse.js"
 
 const createProduct = AsyncHandler(async (req, res) => {
-    const { productname, description, price, stock, category } = req.body
-    if (!productname || !description || !price || !category) {
-        throw new ApiError(400, "Please enter required fields [ productname, description, price, stock, category]")
+    const { productname, description, price, stock, category, subcategory, sizes } = req.body
+   console.log("Request Body:", req.body)
+    if (!productname || !price || !category || !description || !stock) {
+        throw new ApiError(400, "Please enter required fields [productname, description, price, stock, category]")
     }
-    const productimage = req.file?.path
-    if (!productimage) {
+
+    const productimage1 = req.files?.productimage1?.[0]
+    const productimage2 = req.files?.productimage2?.[0]
+    const productimage3 = req.files?.productimage3?.[0]
+    const productimage4 = req.files?.productimage4?.[0]
+
+    if (!productimage1 && !productimage2 && !productimage3 && !productimage4) {
         throw new ApiError(400, "Product image is required")
-    }   
-   //cloudinary image upload  TODO
+    }
 
     const product = await Product.create({
         productname,
         description,
-        productimage:productimage.secure_url,
+        productimage1: productimage1?.path,
+        productimage2: productimage2?.path,
+        productimage3: productimage3?.path,
+        productimage4: productimage4?.path,
         price,
         stock,
-        category
+        category,
+        subcategory,
+        sizes,
+        owner: req.user._id
     })
 
     return res.status(201).json(
         new ApiResponse(200, product, "Product created successfully")
     )
-})  
+})
+
 export { createProduct }
