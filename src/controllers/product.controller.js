@@ -80,6 +80,21 @@ const getListOfProductsBySearchFilter = AsyncHandler(async (req, res) => {
     new ApiResponse(200, products, "Filtered products fetched successfully")
   )
 })
+const deleteproduct = AsyncHandler(async (req, res) => {
+  const { ProductId } = req.params
+
+  if (!ProductId) {
+    throw new ApiError(400, "ProductId is required");
+  }
+  const product = await Product.findByIdAndDelete(ProductId)
+  if (!product) {
+    throw new ApiError(400, "Product Not Found")
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, product, "Products fetched And Deleted Successfully")
+  )
+})
 
 
 
@@ -89,8 +104,4 @@ const getListOfProductsBySearchFilter = AsyncHandler(async (req, res) => {
 
 
 
-
-
-
-
-export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter }
+export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter, deleteproduct }
