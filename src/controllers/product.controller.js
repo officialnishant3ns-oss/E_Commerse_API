@@ -49,10 +49,48 @@ const getListOfallProducts = AsyncHandler(async (req, res) => {
     new ApiResponse(200, products, "List of products fetched successfully")
   )
 })
+const getListOfProductsBySearchFilter = AsyncHandler(async (req, res) => {
+  const { productname, category, minprice, maxprice, sizes } = req.query
+
+  const queryObject = {}
+
+  if (productname) {  // search by product name
+    queryObject.productname = { $regex: productname, $options: "i" }
+  }
+  if (category) {    // filter by category
+    queryObject.category = category
+  }
+  if (minprice || maxprice) {   // filter by price range
+    queryObject.price = {}
+    if (minprice) {
+      queryObject.price.$gte = Number(minprice)
+    }
+    if (maxprice) {
+      queryObject.price.$lte = Number(maxprice)
+    }
+  }
+  if (sizes) {   // filter by sizes
+    const sizesArray = sizes.split(",").map(size => size.trim())
+    queryObject.sizes = { $in: sizesArray }
+  }
+
+  const products = await Product.find(queryObject).populate("owner", "username email")
+
+  return res.status(200).json(
+    new ApiResponse(200, products, "Filtered products fetched successfully")
+  )
+})
 
 
 
 
 
 
-export { createProduct, getListOfallProducts }
+
+
+
+
+
+
+
+export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter }
