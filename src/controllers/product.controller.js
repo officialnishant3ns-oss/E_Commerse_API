@@ -95,13 +95,23 @@ const deleteproduct = AsyncHandler(async (req, res) => {
     new ApiResponse(200, product, "Products fetched And Deleted Successfully")
   )
 })
+const updateProduct = AsyncHandler(async (req, res) => {
+  // TODISO: Implement update product functionality
+})
+const getSingleProductDetails = AsyncHandler(async (req, res) => {
+  const { ProductId } = req.params
 
+  if (!ProductId) {
+    throw new ApiError(400, "ProductId is required");
+  }
+  const product = await Product.findById(ProductId).populate("owner", "username email")
+  if (!product) {
+    throw new ApiError(400, "Product Not Found")
+  }
 
+  return res.status(200).json(
+    new ApiResponse(200, product, "Products fetched And Deleted Successfully")
+  )
+})
 
-
-
-
-
-
-
-export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter, deleteproduct }
+export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter, deleteproduct, updateProduct, getSingleProductDetails }
