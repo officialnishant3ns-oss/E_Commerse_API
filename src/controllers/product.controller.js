@@ -42,4 +42,17 @@ const createProduct = AsyncHandler(async (req, res) => {
     new ApiResponse(201, product, "Product created successfully")
   )
 })
-export { createProduct }
+const getListOfallProducts = AsyncHandler(async (req, res) => {
+  const products = await Product.find({}).populate("owner", "username email")
+
+  return res.status(200).json(
+    new ApiResponse(200, products, "List of products fetched successfully")
+  )
+})
+
+
+
+
+
+
+export { createProduct, getListOfallProducts }
