@@ -4,9 +4,9 @@ import ApiResponse from "../utils/apiresponse.js"
 import Cart from "../models/cart.models.js"
 import Product from "../models/product.models.js"
 
-//add to cart - user >>>DONE
-//get my cart items - user>>>DONE
-//update cart item quantity - user
+//add to cart - user                    >>>DONE
+//get my cart items - user              >>>DONE
+//update cart item quantity - user      >>>DONE
 //remove from cart - user   
 //total cart clear - user
 const addToCart = AsyncHandler(async (req, res) => {
@@ -49,10 +49,10 @@ const addToCart = AsyncHandler(async (req, res) => {
 const getMyCartItems = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     let cart = await Cart.findOne({ user: userId })
-        .select("-createdAt -updatedAt -__v") 
+        .select("-createdAt -updatedAt -__v")
         .populate({
             path: "items.product",
-            select: "-createdAt -updatedAt -__v" 
+            select: "-createdAt -updatedAt -__v"
         })
 
     if (!cart) {
@@ -64,6 +64,41 @@ const getMyCartItems = AsyncHandler(async (req, res) => {
         new ApiResponse(200, cart, "Cart retrieved successfully")
     )
 })
+const updateCartItemQuantity = AsyncHandler(async (req, res) => {
+    const userId = req.user._id
+    const { productId, quantity } = req.body
+
+    if (!productId || !quantity || quantity < 1) {
+        throw new ApiError(400, "productId and valid quantity are required");
+    }
+    const product = await Product.findById(productId)
+    if (!product) {
+        throw new ApiError(404, "Product not found")
+    }
+    if (quantity > product.stock) {
+        throw new ApiError(400, `Only ${product.stock} items available`)
+    }
+    const cart = await Cart.findOne({ user: userId })
+    if (!cart) {
+        throw new ApiError(404, "Cart not found")
+    }
+    const item = cart.items.find(i => i.product.toString() === productId.toString());
+    if (!item) {
+        throw new ApiError(404, "Product not found in cart");
+    }
+    item.quantity = quantity
+    await cart.save()
+
+    const updatedCart = await Cart.findOne({ user: userId })
+        .select("-createdAt -updatedAt -__v")
+        .populate({ path: "items.product", select: "-createdAt -updatedAt -__v" })
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedCart, "Cart item quantity updated successfully")
+    )
+
+})
+
 const removeFromCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId } = req.params
@@ -72,9 +107,6 @@ const removeFromCart = AsyncHandler(async (req, res) => {
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
-
-})
-const updateCartItemQuantity = AsyncHandler(async (req, res) => {
 
 })
 const clearCart = AsyncHandler(async (req, res) => {
