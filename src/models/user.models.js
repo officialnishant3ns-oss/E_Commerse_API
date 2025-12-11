@@ -26,17 +26,12 @@ const userSchema = new mongoose.Schema(
         refreshtoken: {
             type: String
         },
-        cartdata: {
-            type: Object,
-            default: {}
-        },
         role:{
             type:String,
             enum:["user","admin"],
             default:"user"
         }
     },
-    { minimize: false },
     { timestamps: true }
 )
 userSchema.pre("save", async function () {

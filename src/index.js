@@ -9,7 +9,7 @@ import connectdb from './db/db.js'
 import app from '../src/app.js'
 
 connectdb()
- .then(() => {
+    .then(() => {
         app.listen(process.env.PORT || 9000, () => {
             console.log(`server is ready at ${process.env.PORT}`);
         })
@@ -22,7 +22,6 @@ connectdb()
         console.log("Mongo_DB connection failed", error);
     })
 
-     app.get('/api/v1',(_,res)=>{
-        res.send('Welcome to the E-commerce App')
-    })
-    
+app.get('/api/v1', (_, res) => {
+    res.send('Welcome to the E-commerce App')
+})
