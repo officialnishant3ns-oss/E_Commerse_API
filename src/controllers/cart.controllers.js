@@ -7,8 +7,9 @@ import Product from "../models/product.models.js"
 //add to cart - user                    >>>DONE
 //get my cart items - user              >>>DONE
 //update cart item quantity - user      >>>DONE
-//remove from cart - user   
-//total cart clear - user
+//remove from cart - user                  >>IN PROGRESS
+// cart clear - user    
+
 const addToCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId, quantity } = req.body
@@ -91,14 +92,13 @@ const updateCartItemQuantity = AsyncHandler(async (req, res) => {
 
     const updatedCart = await Cart.findOne({ user: userId })
         .select("-createdAt -updatedAt -__v")
-        .populate({ path: "items.product", select: "-createdAt -updatedAt -__v" })
+        .populate({ path: "items.product", select: "_id productname quantity price description" })
 
     return res.status(200).json(
         new ApiResponse(200, updatedCart, "Cart item quantity updated successfully")
     )
 
 })
-
 const removeFromCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId } = req.params
@@ -107,6 +107,11 @@ const removeFromCart = AsyncHandler(async (req, res) => {
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
+    const item = await cart.items.findand(i => i.product.toString() === productId.toString())
+    if (!item) {
+        throw new ApiError(404, "Product not found in cart")
+    }
+
 
 })
 const clearCart = AsyncHandler(async (req, res) => {
