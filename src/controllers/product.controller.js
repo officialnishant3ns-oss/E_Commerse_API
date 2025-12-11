@@ -95,9 +95,6 @@ const deleteproduct = AsyncHandler(async (req, res) => {
     new ApiResponse(200, product, "Products fetched And Deleted Successfully")
   )
 })
-const updateProduct = AsyncHandler(async (req, res) => {
-  // TODISO: Implement update product functionality
-})
 const getSingleProductDetails = AsyncHandler(async (req, res) => {
   const { ProductId } = req.params
 
@@ -110,8 +107,23 @@ const getSingleProductDetails = AsyncHandler(async (req, res) => {
   }
 
   return res.status(200).json(
-    new ApiResponse(200, product, "Products fetched And Deleted Successfully")
+    new ApiResponse(200, product, "Products fetched Successfully")
   )
 })
+const updateProduct = AsyncHandler(async (req, res) => {
+  // TODISO: Implement update product functionality
+  const { ProductId } = req.params
+  if (!ProductId) {
+    throw new ApiError(400, "ProductId is required");
+  }
+  const product = await Product.findByIdandUpdate(ProductId, req.body, { new: true })
+  if (!product) {
+    throw new ApiError(400, "Product Not Found")
+  } 
+  return res.status(200).json(
+    new ApiResponse(200, product, "Products Updated Successfully")
+  )
+})
+
 
 export { createProduct, getListOfallProducts, getListOfProductsBySearchFilter, deleteproduct, updateProduct, getSingleProductDetails }

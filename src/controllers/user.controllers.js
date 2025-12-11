@@ -83,8 +83,8 @@ const login = AsyncHandler(async (req, res) => {
         )
 })
 const logout = AsyncHandler(async (req, res) => {
-  console.log("User logged out:", req.user)
-   await User.findByIdAndUpdate(req.user._id,
+    console.log("User logged out:", req.user)
+    await User.findByIdAndUpdate(req.user._id,
         {
             $set: {
                 refreshtoken: undefined
@@ -94,7 +94,7 @@ const logout = AsyncHandler(async (req, res) => {
             new: true
         }
     )
-  
+
     const option = {
         httpOnly: true,
         secure: true
@@ -106,7 +106,46 @@ const logout = AsyncHandler(async (req, res) => {
 }
 )
 const adminLogin = AsyncHandler(async (req, res) => {
-    // Admin login logic here
+    const { email, password } = req.body
+
+    if (!email || !password) {
+        throw new ApiError(400, "Email and password are required")
+    }
     
+    if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
+        throw new ApiError(401, "Invalid Admin Credentials")
+    }
+
+    const user = await User.findOne({ email })
+    if (!user) {
+        throw new ApiError(404, "Admin user record not found in database")
+    }
+
+    const { accesstoken, refreshtoken } = await AccesstokenAndRefreshtokenGenerate(user._id)
+
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/"
+    }
+
+    return res
+        .status(200)
+        .cookie("accesstoken", accesstoken, cookieOptions)
+        .cookie("refreshtoken", refreshtoken, cookieOptions)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    email: user.email,
+                    role:"admin",
+                    refreshtoken,
+                    accesstoken
+                },
+                "Admin logged in successfully"
+            )
+        )
 })
-export { register, login , logout, adminLogin}
+
+export { register, login, logout, adminLogin }
