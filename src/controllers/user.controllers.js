@@ -21,7 +21,7 @@ const AccesstokenAndRefreshtokenGenerate = async (userId) => {
     }
 }
 const register = AsyncHandler(async (req, res) => {
-    const { username, email, password } = req.body
+    const { username, email, password ,role} = req.body
     if (!username || !email || !password) {
         throw new ApiError(400, "Please Enter Required fields")
     }
@@ -38,7 +38,8 @@ const register = AsyncHandler(async (req, res) => {
     const user = await User.create({
         email,
         password,
-        username: username.toLowerCase()
+        username: username.toLowerCase(),
+        role:role || "user"
     })
     const createduser = await User.findById(user._id).select(
         "-password -refreshtoken -createdAt -updatedAt -__v"
@@ -111,14 +112,20 @@ const adminLogin = AsyncHandler(async (req, res) => {
     if (!email || !password) {
         throw new ApiError(400, "Email and password are required")
     }
-    
+
     if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
         throw new ApiError(401, "Invalid Admin Credentials")
     }
 
-    const user = await User.findOne({ email })
+    let user = await User.findOne({ email })
+
     if (!user) {
         throw new ApiError(404, "Admin user record not found in database")
+    }
+
+    if (user.role !== "admin") {
+        user.role = "admin"
+        await user.save()
     }
 
     const { accesstoken, refreshtoken } = await AccesstokenAndRefreshtokenGenerate(user._id)
@@ -139,7 +146,7 @@ const adminLogin = AsyncHandler(async (req, res) => {
                 200,
                 {
                     email: user.email,
-                    role:"admin",
+                    role: user.role,
                     refreshtoken,
                     accesstoken
                 },
@@ -147,5 +154,6 @@ const adminLogin = AsyncHandler(async (req, res) => {
             )
         )
 })
+
 
 export { register, login, logout, adminLogin }
