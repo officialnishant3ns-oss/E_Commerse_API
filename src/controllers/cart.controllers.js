@@ -5,7 +5,7 @@ import Cart from "../models/cart.models.js"
 import Product from "../models/product.models.js"
 
 //add to cart - user >>>DONE
-//get my cart items - user
+//get my cart items - user>>>DONE
 //remove from cart - user   
 //update cart item quantity - user
 //total cart value - user
@@ -35,14 +35,27 @@ const addToCart = AsyncHandler(async (req, res) => {
     }
     const cartWithProducts = await cart
         .populate("items.product", "-__v -createdAt -updatedAt")
-        
+
 
     return res.status(200).json(
         new ApiResponse(200, cartWithProducts, "Product added to cart successfully")
     )
 }
 )
+const getMyCartItems = AsyncHandler(async (req, res) => {
+    const userId = req.user._id
+    let cart = await Cart.findOne({ user: userId }).populate("items.product", "-__v -createdAt -updatedAt")
+
+    if (!cart) {
+        return res.status(200).json(
+            new ApiResponse(200, [], "Cart is empty")
+        )
+    }
+    return res.status(200).json(
+        new ApiResponse(200, cart, "Cart retrieved successfully")
+    )
+})
 
 
 
-export { addToCart }
+export { addToCart, getMyCartItems }
