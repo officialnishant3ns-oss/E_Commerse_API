@@ -19,6 +19,9 @@ const addToCart = AsyncHandler(async (req, res) => {
     if (!product) {
         throw new ApiError(404, "Product not found")
     }
+    if (quantity > product.stock) {
+        throw new ApiError(400, `Only ${product.stock} items available`)
+    }
     let cart = await Cart.findOne({ user: userId });
     if (!cart) {
         cart = await Cart.create({
@@ -55,7 +58,19 @@ const getMyCartItems = AsyncHandler(async (req, res) => {
         new ApiResponse(200, cart, "Cart retrieved successfully")
     )
 })
+const removeFromCart = AsyncHandler(async (req, res) => {
+    const userId = req.user._id
+    const { productId } = req.params
+
+    const cart = await Cart.find({ user: userId })
+    if (!cart) {
+        throw new ApiError(404, "Cart not found")
+    }
+
+})
+const updateCartItemQuantity = AsyncHandler(async (req, res) => {
+
+})
 
 
-
-export { addToCart, getMyCartItems }
+export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity }
