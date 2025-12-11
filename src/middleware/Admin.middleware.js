@@ -2,7 +2,10 @@ import ApiError from "../utils/apierror.js"
 
 const adminAuth = (req, res, next) => {
     if (!req.user || req.user.role !== "admin") {
-        throw new ApiError(403, "Access denied. Admin only route")
+       return res.status(403).json({
+            success: false,
+            message: "Access denied. Admins only.",
+        })
     }
     next()
 }

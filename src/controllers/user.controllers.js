@@ -154,6 +154,26 @@ const adminLogin = AsyncHandler(async (req, res) => {
             )
         )
 })
+const adminLogout = AsyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id,
+        {   
+            $set: {
+                refreshtoken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
 
+    const option = {
+        httpOnly: true,
+        secure: true
+    }
+    return res.status(200).clearCookie("accesstoken", option)
+        .clearCookie("refreshtoken", option).json(
+            new ApiResponse(200, {}, "Admin logged out")
+        )
+})  
 
-export { register, login, logout, adminLogin }
+export { register, login, logout, adminLogin, adminLogout }

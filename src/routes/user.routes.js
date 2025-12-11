@@ -1,6 +1,7 @@
 import { Router } from "express"
-import { login, logout, register,adminLogin } from "../controllers/user.controllers.js"
+import { login, logout, register, adminLogin,  adminLogout} from "../controllers/user.controllers.js"
 import verifyJWT from "../middleware/auth.middleware.js"
+import adminAuth from "../middleware/Admin.middleware.js"
 const router = Router()
 
 
@@ -9,4 +10,6 @@ router.route("/register").post(register)
 router.route("/login").post(login)
 router.route("/logout").post(verifyJWT,logout)
 router.route('/adminlogin').post(adminLogin)
+router.route('/adminlogout').post(verifyJWT,adminAuth,adminLogout)
+
 export default router
