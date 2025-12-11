@@ -6,14 +6,14 @@ import Product from "../models/product.models.js"
 
 //add to cart - user >>>DONE
 //get my cart items - user>>>DONE
-//remove from cart - user   
 //update cart item quantity - user
-//total cart value - user
+//remove from cart - user   
+//total cart clear - user
 const addToCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId, quantity } = req.body
-    if (!productId || !quantity) {
-        throw new ApiError(400, "Please provide productId and quantity")
+    if (!productId || !quantity || quantity < 1) {
+        throw new ApiError(400, "productId and valid quantity are required");
     }
     const product = await Product.findById(productId).select("_id price stock")
     if (!product) {
@@ -22,17 +22,18 @@ const addToCart = AsyncHandler(async (req, res) => {
     if (quantity > product.stock) {
         throw new ApiError(400, `Only ${product.stock} items available`)
     }
+
     let cart = await Cart.findOne({ user: userId });
     if (!cart) {
         cart = await Cart.create({
             user: userId,
-            items: [{ product: productId, quantity }]
+            items: [{ product: productId, quantity: quantity }]
         })
     } else {
         const existingItem = cart.items.find(
             item => item.product.toString() === productId
         )
-        if (existingItem) existingItem.quantity += quantity
+        if (existingItem) existingItem.quantity += 1
         else cart.items.push({ product: productId, quantity })
         await cart.save()
     }
@@ -47,7 +48,12 @@ const addToCart = AsyncHandler(async (req, res) => {
 )
 const getMyCartItems = AsyncHandler(async (req, res) => {
     const userId = req.user._id
-    let cart = await Cart.findOne({ user: userId }).populate("items.product", "-__v -createdAt -updatedAt")
+    let cart = await Cart.findOne({ user: userId })
+        .select("-createdAt -updatedAt -__v") 
+        .populate({
+            path: "items.product",
+            select: "-createdAt -updatedAt -__v" 
+        })
 
     if (!cart) {
         return res.status(200).json(
@@ -71,6 +77,8 @@ const removeFromCart = AsyncHandler(async (req, res) => {
 const updateCartItemQuantity = AsyncHandler(async (req, res) => {
 
 })
+const clearCart = AsyncHandler(async (req, res) => {
 
+})
 
 export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity }
