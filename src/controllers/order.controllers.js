@@ -5,7 +5,7 @@ import Order from "../models/order.models.js"
 
 
 
-//
+//create order - user
 //get all orders - admin only
 //update order status - admin only
 //get my all orders - user
