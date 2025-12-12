@@ -20,12 +20,13 @@ const addToCart = AsyncHandler(async (req, res) => {
     if (!product) {
         throw new ApiError(404, "Product not found")
     }
-    if (quantity > product.stock) {
-        throw new ApiError(400, `Only ${product.stock} items available`)
-    }
+
 
     let cart = await Cart.findOne({ user: userId });
     if (!cart) {
+        if (quantity > product.stock) {
+            throw new ApiError(400, `Only ${product.stock} items available`)
+        }
         cart = await Cart.create({
             user: userId,
             items: [{ product: productId, quantity: quantity }]
