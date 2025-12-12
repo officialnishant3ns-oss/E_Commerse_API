@@ -81,12 +81,14 @@ const updateCartItemQuantity = AsyncHandler(async (req, res) => {
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
-    const item = cart.items.find(i => i.product.toString() === productId.toString() && i.size === size);
+    const item = cart.items.find(i => i.product.toString() === productId.toString() &&  (size ? i.size === size : true))
     if (!item) {
         throw new ApiError(404, "Product not found in cart");
     }
     item.quantity = quantity
-    item.size = size
+    if (size) {
+        item.size = size;
+    }
     await cart.save()
 
     const updatedCart = await Cart.findOne({ user: userId })
