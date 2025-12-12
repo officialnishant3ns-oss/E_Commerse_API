@@ -5,7 +5,7 @@ import ApiResponse from "../utils/apiresponse.js"
 import uploadoncloudinary from "../utils/cloudinary.js"
 
 const createProduct = AsyncHandler(async (req, res) => {
-  const { productname, description, price, category, subcategory, sizes } = req.body
+  const { productname, description, price, category, subcategory, sizes, stock } = req.body
 
   if (!productname || !description || !price || !category) {
     throw new ApiError(400, "Please enter required fields [productname, description, price, category]")
@@ -27,33 +27,15 @@ const createProduct = AsyncHandler(async (req, res) => {
     throw new ApiError(400, "Failed to upload product images")
   }
 
-  let parsedSizes = []
-
-  if (sizes) {
-    parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes
-
-    if (!Array.isArray(parsedSizes)) {
-      throw new ApiError(400, "Sizes must be an array")
-    }
-
-    parsedSizes.forEach(v => {
-      if (!v.size || v.stock === undefined) {
-        throw new ApiError(400, "Each size must include size and stock")
-      }
-      if (v.stock < 0) {
-        throw new ApiError(400, "Stock cannot be negative")
-      }
-    })
-  }
-
   const product = await Product.create({
     productname,
     description,
     productimages,
     price,
+    stock: stock || 0,
     category,
     subcategory: subcategory || "",
-    sizes: parsedSizes,
+    sizes: sizes,
     owner: req.user._id
   })
 
@@ -61,8 +43,6 @@ const createProduct = AsyncHandler(async (req, res) => {
     new ApiResponse(201, product, "Product created successfully")
   )
 })
-
-
 const getListOfallProducts = AsyncHandler(async (req, res) => {
   const products = await Product.find({}).populate("owner", "username email")
 
@@ -75,13 +55,13 @@ const getListOfProductsBySearchFilter = AsyncHandler(async (req, res) => {
 
   const queryObject = {}
 
-  if (productname) {  
+  if (productname) {
     queryObject.productname = { $regex: productname, $options: "i" }
   }
-  if (category) {   
+  if (category) {
     queryObject.category = category
   }
-  if (minprice || maxprice) {   
+  if (minprice || maxprice) {
     queryObject.price = {}
     if (minprice) {
       queryObject.price.$gte = Number(minprice)
