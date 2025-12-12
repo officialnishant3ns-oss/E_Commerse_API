@@ -4,32 +4,22 @@ import ApiResponse from "../utils/apiresponse.js"
 import Cart from "../models/cart.models.js"
 import Product from "../models/product.models.js"
 
-//add to cart - user                    >>>DONE
-//get my cart items - user              >>>DONE
-//update cart item quantity - user      >>>DONE
-//remove from cart - user                  >>IN PROGRESS
-// cart clear - user    
-
 const addToCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId, quantity, size } = req.body
-    if (!productId || !quantity || quantity < 1 || !size) {
+    if (!productId || !quantity || quantity < 1) {
         throw new ApiError(400, "productId and valid quantity are required");
     }
-    const product = await Product.findById(productId).select("_id price sizes")
+    const product = await Product.findById(productId).select("_id price stock sizes")
     if (!product) {
         throw new ApiError(404, "Product not found")
     }
-    const selectedVariant = product.sizes.find(v => v.size === size)
-    if (!selectedVariant) {
-        throw new ApiError(400, `Size ${size} is not available for this product`)
-    }
-    if (quantity > selectedVariant.stock) {
-        throw new ApiError(400, `Only ${selectedVariant.stock} items available for size ${size}`)
-    }
 
-    let cart = await Cart.findOne({ user: userId });
+    let cart = await Cart.findOne({ user: userId })
     if (!cart) {
+        if (quantity > product.stock) {
+            throw new ApiError(400, `Only ${product.stock} items available`)
+        }
         cart = await Cart.create({
             user: userId,
             items: [{ product: productId, quantity: quantity, size: size }]
@@ -38,13 +28,13 @@ const addToCart = AsyncHandler(async (req, res) => {
         const existingItem = cart.items.find(item => item.product.toString() === productId.toString() && item.size === size)
         if (existingItem) {
             const newQuantity = existingItem.quantity + quantity
-            if (newQuantity > selectedVariant.stock) {
-                throw new ApiError(400, `Only ${selectedVariant.stock} items available for size ${size}`)
-            }
+            if (newQuantity > product.stock) throw new ApiError(400, `Only ${product.stock} items available`)
             existingItem.quantity = newQuantity
-        } else {
-            cart.items.push({ product: productId, quantity, size })
-        } await cart.save()
+        }
+        else {
+            cart.items.push({ product: productId, quantity: quantity, size: size })
+        }
+        await cart.save()
     }
     const cartWithProducts = await cart
         .populate("items.product", "-__v -createdAt -updatedAt")
@@ -55,14 +45,6 @@ const addToCart = AsyncHandler(async (req, res) => {
     )
 }
 )
-
-
-
-
-
-
-
-
 const getMyCartItems = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     let cart = await Cart.findOne({ user: userId })
@@ -83,7 +65,7 @@ const getMyCartItems = AsyncHandler(async (req, res) => {
 })
 const updateCartItemQuantity = AsyncHandler(async (req, res) => {
     const userId = req.user._id
-    const { productId, quantity } = req.body
+    const { productId, quantity, size } = req.body
 
     if (!productId || !quantity || quantity < 1) {
         throw new ApiError(400, "productId and valid quantity are required");
@@ -99,11 +81,12 @@ const updateCartItemQuantity = AsyncHandler(async (req, res) => {
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
-    const item = cart.items.find(i => i.product.toString() === productId.toString());
+    const item = cart.items.find(i => i.product.toString() === productId.toString() && i.size === size);
     if (!item) {
         throw new ApiError(404, "Product not found in cart");
     }
     item.quantity = quantity
+    item.size = size
     await cart.save()
 
     const updatedCart = await Cart.findOne({ user: userId })
