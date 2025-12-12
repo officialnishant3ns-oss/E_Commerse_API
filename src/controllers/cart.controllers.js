@@ -115,7 +115,16 @@ const removeFromCart = AsyncHandler(async (req, res) => {
 
 })
 const clearCart = AsyncHandler(async (req, res) => {
-
+  const userId = req.user._id
+  const cart = await Cart.findOne({ user: userId })
+    if (!cart) {
+        throw new ApiError(404, "Cart not found")
+    }
+    cart.items = []
+    await cart.save()
+    return res.status(200).json(
+        new ApiResponse(200, null, "Cart cleared successfully")
+    )
 })
 
-export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity }
+export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity ,clearCart}
