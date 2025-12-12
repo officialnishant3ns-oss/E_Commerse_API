@@ -103,20 +103,28 @@ const removeFromCart = AsyncHandler(async (req, res) => {
     const userId = req.user._id
     const { productId } = req.params
 
-    const cart = await Cart.find({ user: userId })
+    const product = await Product.findById(productId)
+    if (!product) {
+        throw new ApiError(404, "Product not found")
+    }
+    const cart = await Cart.findOne({ user: userId })
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
-    const item = await cart.items.findand(i => i.product.toString() === productId.toString())
-    if (!item) {
+    const cartItem = await cart.items.find(i => i.product.toString() === productId.toString())
+    if (!cartItem) {
         throw new ApiError(404, "Product not found in cart")
     }
+    cart.items.pull(cartItem)
+    await cart.save()
 
-
+    return res.status(200).json(
+        new ApiResponse(200, null, "Product removed from cart successfully")
+    )
 })
 const clearCart = AsyncHandler(async (req, res) => {
-  const userId = req.user._id
-  const cart = await Cart.findOne({ user: userId })
+    const userId = req.user._id
+    const cart = await Cart.findOne({ user: userId })
     if (!cart) {
         throw new ApiError(404, "Cart not found")
     }
@@ -127,4 +135,4 @@ const clearCart = AsyncHandler(async (req, res) => {
     )
 })
 
-export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity ,clearCart}
+export { addToCart, getMyCartItems, removeFromCart, updateCartItemQuantity, clearCart }
