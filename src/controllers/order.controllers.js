@@ -91,14 +91,21 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         new ApiResponse(200, order, "Order status updated successfully")
     )
 })
+const getallOrders = asyncHandler(async (req, res) => {
+    const orders = await Order.find()
+        .populate("customer", "name email")
+        .sort({ createdAt: -1 })
 
+    return res.status(200).json(
+        new ApiResponse(200, orders, "All orders fetched successfully")
+    )
+})
 
 const placeOrderStripe = asyncHandler(async (req, res) => {
 })
 const placeOrderRazorpay = asyncHandler(async (req, res) => {
 })
-const getallOrders = asyncHandler(async (req, res) => {
-})
+
 
 
 
