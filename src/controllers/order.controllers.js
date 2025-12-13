@@ -61,20 +61,27 @@ const placeOrderStripe = asyncHandler(async (req, res) => {
 })
 const placeOrderRazorpay = asyncHandler(async (req, res) => {
 })
-
 const getallOrders = asyncHandler(async (req, res) => {
 })
 const updateOrderStatus = asyncHandler(async (req, res) => {
 })
 
 const getMyOrders = asyncHandler(async (req, res) => {
+    const userId = req.user._id
+    const orders = await Order.find({ customer: userId })
+        .populate("orderItems.productId", "productname price")
+        .sort({ createdAt: -1 })
+
+    return res.status(200).json(
+        new ApiResponse(200, orders, "User orders fetched successfully")
+    )
 })
 
 
 export {
     placeOrderCOD,
     placeOrderStripe,
-    placeOrderRazorpay, 
+    placeOrderRazorpay,
     getallOrders,
     updateOrderStatus,
     getMyOrders
