@@ -70,7 +70,7 @@ const getListOfProductsBySearchFilter = AsyncHandler(async (req, res) => {
       queryObject.price.$lte = Number(maxprice)
     }
   }
-  if (sizes) {   //todo: check this >> filter by sizes
+  if (sizes) {   
     const sizesArray = sizes.split(",").map(size => size.trim())
     queryObject.sizes = { $in: sizesArray }
   }

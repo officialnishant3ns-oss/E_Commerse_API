@@ -11,17 +11,24 @@ const orderItemSchema = new mongoose.Schema({
         required: true,
         min: 1,
     },
+    price: {
+        type: Number,
+        required: true,
+    },
+    size: {
+        type: String,
+    }
 })
 
 const orderSchema = new mongoose.Schema(
     {
-        orderPrice: {
-            type: Number,
-            required: true,
-        },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
+            required: true,
+        },
+        orderPrice: {
+            type: Number,
             required: true,
         },
         orderItems: {
@@ -29,14 +36,31 @@ const orderSchema = new mongoose.Schema(
             required: true,
         },
         address: {
-            type: String,
-            required: true,
+            fullName: String,
+            phone: String,
+            street: String,
+            city: String,
+            state: String,
+            pincode: String,
+            country: {
+                type: String,
+                default: "India",
+            },
         },
         status: {
             type: String,
-            enum: ["pending", "cancelled", "delivered"],
+            enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
             default: "pending",
         },
+        paymentMethod: {
+            type: String,
+            enum: ["cod", "online"],
+            required: true,
+        },
+        payment: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Payment",
+        }
     },
     {
         timestamps: true,
