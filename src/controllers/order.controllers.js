@@ -57,15 +57,6 @@ const placeOrderCOD = asyncHandler(async (req, res) => {
         new ApiResponse(201, order, "Order placed successfully with Cash on Delivery")
     )
 })
-const placeOrderStripe = asyncHandler(async (req, res) => {
-})
-const placeOrderRazorpay = asyncHandler(async (req, res) => {
-})
-const getallOrders = asyncHandler(async (req, res) => {
-})
-const updateOrderStatus = asyncHandler(async (req, res) => {
-})
-
 const getMyOrders = asyncHandler(async (req, res) => {
     const userId = req.user._id
     const orders = await Order.find({ customer: userId })
@@ -76,6 +67,39 @@ const getMyOrders = asyncHandler(async (req, res) => {
         new ApiResponse(200, orders, "User orders fetched successfully")
     )
 })
+const updateOrderStatus = asyncHandler(async (req, res) => {
+
+    const { OrderId } = req.params
+    const { status } = req.body
+
+    if (!status) {
+        throw new ApiError(400, "Please Enter Status")
+    }
+    const order = await Order.findById(OrderId)
+    if (!order) {
+        throw new ApiError(404, "Order not found")
+    }
+
+    if (order.status === "delivered") {
+        throw new ApiError(400, "Delivered orders cannot be updated")
+    }
+
+    order.status = status
+    await order.save()
+
+    return res.status(200).json(
+        new ApiResponse(200, order, "Order status updated successfully")
+    )
+})
+
+
+const placeOrderStripe = asyncHandler(async (req, res) => {
+})
+const placeOrderRazorpay = asyncHandler(async (req, res) => {
+})
+const getallOrders = asyncHandler(async (req, res) => {
+})
+
 
 
 export {

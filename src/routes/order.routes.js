@@ -12,6 +12,6 @@ router.route("/getmyorders").get(verifyJWT, getMyOrders)
 
 //admin routes
 router.route("/getallorders").get(verifyJWT, adminAuth, getallOrders)
-router.route("/updateorderstatus/:orderId").put(verifyJWT, adminAuth, updateOrderStatus)
+router.route("/updateorderstatus/:OrderId").put(verifyJWT, adminAuth, updateOrderStatus)
 
 export default router
